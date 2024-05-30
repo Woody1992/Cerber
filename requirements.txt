@@ -1,0 +1,4 @@
+asgiref==3.8.1
+Django==5.0.6
+django-htmx-messages-framework @ git+https://github.com/bblanchon/django-htmx-messages-framework.git@a2da4176ac4a53fb0d7f42e8a1de398e4e5f9c1c
+sqlparse==0.5.0
