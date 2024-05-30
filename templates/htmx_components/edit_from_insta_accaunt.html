@@ -1,0 +1,58 @@
+{% load static %}
+<form class="m-3"
+      hx-post="instagram-accounts/detail/{{ account.id }}"
+>
+    {% csrf_token %}
+    <div class="form-floating mb-3">
+        <input id="InstaUsername" type="text" class="form-control" placeholder="IvanDrago"
+               value="{{ account.username }}"
+               name="username">
+
+        <label for="InstaUsername">Username</label>
+    </div>
+    <div class="input-group">
+
+        <div class="form-floating ">
+            <input class="form-control pwd" id="InstaPassword" type="password" name="password"
+                   value="{{ account.password }}">
+            <label for="InstaPassword">Password</label>
+        </div>
+        <div class="input-group-append">
+            <button class="btn btn-outline-secondary reveal" type="button" style="height: 100%"><img
+                    src="{% static 'img/eye.png' %}" alt="eye" width="16px" height="16px"></button>
+        </div>
+    </div>
+        <fieldset class="row mb-3">
+            <div class="col-sm-10 m-4">
+                {% if account.status == 'banned' %}
+                    <div class="jumbotron jumbotron-fluid">
+                        <p class="lead" style="color: var(--bs-danger)">В банчик улетів</p>
+                    </div>
+                {% endif %}
+                <div class="form-check">
+
+                    <input {% if account.status == 'active' %}checked{% endif %}  class="form-check-input" type="checkbox"
+                           id="InstaActive"
+                           name="status">
+                    <label class="form-check-label" for="InstaActive">
+                        Активний (готовий до використання)
+                    </label>
+                </div>
+
+            </div>
+        </fieldset>
+        <div class="row">
+            <button type="submit" class="btn btn-outline-success">Підтвердити</button>
+        </div>
+
+</form>
+<script>
+    $(".reveal").on('click', function () {
+        var $pwd = $(".pwd");
+        if ($pwd.attr('type') === 'password') {
+            $pwd.attr('type', 'text');
+        } else {
+            $pwd.attr('type', 'password');
+        }
+    });
+</script>

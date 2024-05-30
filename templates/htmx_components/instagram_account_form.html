@@ -1,0 +1,34 @@
+{% load static %}
+<div class="card card-body">
+    <form class="m-3"
+      hx-post="instagram-accounts/add-account/"
+      hx-target="#AddAccount"
+      hx-swap="outerHTML"
+>
+    {% csrf_token %}
+    <div class="form-floating mb-3">
+        <input type="text" class="form-control" id="InstaUsername" placeholder="IvanDrago"
+               name="username">
+        <label for="InstaUsername">Username</label>
+    </div>
+    <div class="form-floating">
+        <input type="text" class="form-control" id="InstaPassword" placeholder="Password"
+               name="password">
+        <label for="InstaPassword">Password</label>
+    </div>
+    <fieldset class="row mb-3">
+        <div class="col-sm-10 m-4">
+            <div class="form-check">
+                <input checked class="form-check-input" type="checkbox" id="InstaActive"
+                       name="status">
+                <label class="form-check-label" for="InstaActive">
+                     Активний (готовий до використання)
+                </label>
+            </div>
+        </div>
+    </fieldset>
+    <div class="row">
+        <button type="submit" class="btn btn-outline-success">Підтвердити</button>
+    </div>
+</form>
+</div>

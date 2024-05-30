@@ -1,0 +1,66 @@
+{% load static %}
+<div id="instagram_account_list"
+     class="mt-3"
+     style="max-height: 300px;
+     overflow-y:scroll;
+     overflow-x:scroll;">
+    <table class="table table-bordered  table-striped table-sm">
+        <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">User</th>
+            <th scope="col">Status</th>
+            <th scope="col">Running</th>
+            <th scope="col"></th>
+        </tr>
+        </thead>
+        <tbody hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+        {% for account in accounts %}
+            <tr>
+                <th scope="row">{{ forloop.counter0 }}</th>
+                <td>{{ account.username }}</td>
+                <td>
+                    {% if account.status == 'active' %}<img src="{% static 'img/verified.png' %}" width="16px" height="16px" alt="">
+                    {% elif account.status == 'inactive' %}<img src="{% static 'img/remove.png' %}" width="16px" height="16px" alt="">
+                    {% else %}<img src="{% static 'img/ban.png' %}" width="16px" height="16px" alt="">{% endif %}
+                </td>
+                <td class="
+                    {% if account.in_use %}table-info
+                    {% endif %}"
+                >
+                    {{ account.in_use }}
+                </td>
+                <td>
+                    <div class="btn-group" role="group" aria-label="Basic example" style="width: 100%">
+                      <a hx-target="#modelBody"
+                         hx-swap="innerHTML"
+                         hx-get="instagram-accounts/detail/{{ account.id }}"
+                         hx-trigger="click"
+                         onclick="showModal()"
+                         type="button" class="btn btn-outline-primary"
+                      >
+                          <img  src="{% static 'img/edit-text.png' %}" width="16px" height="16px" alt="">
+                      </a>
+
+                      <a type="button" class="btn btn-outline-danger"
+                        hx-delete="instagram-accounts/detail/{{ account.id }}"
+                        hx-confirm="Точно?"
+                      >
+                          <img src="{% static 'img/delete.png' %}" width="16px" height="16px" alt="">
+                      </a>
+                    </div>
+{#                        hx-get="{% url 'instagram_account_detail' account.id %}"#}
+{#                        hx-target="#instagram_account_detail"#}
+{#                        hx-swap="outerHTML"#}
+{#                        hx-trigger="click"#}
+{#                        hx-get="{% url 'instagram_account_detail' account.id %}"#}
+{#                        hx-target="#instagram_account_detail"#}
+{#                        hx-swap="outerHTML"#}
+{#                        hx-trigger="click"#}
+                </td>
+            </tr>
+        {% endfor %}
+
+        </tbody>
+    </table>
+</div>
