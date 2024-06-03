@@ -1,4 +1,9 @@
 asgiref==3.8.1
 Django==5.0.6
+django-extensions==3.2.3
 django-htmx-messages-framework @ git+https://github.com/bblanchon/django-htmx-messages-framework.git@a2da4176ac4a53fb0d7f42e8a1de398e4e5f9c1c
+factory-boy==3.3.0
+Faker==25.3.0
+python-dateutil==2.9.0.post0
+six==1.16.0
 sqlparse==0.5.0

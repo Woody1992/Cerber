@@ -1,22 +1,30 @@
-import random
+import json
 
 from django.contrib import messages
-from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
-from django.shortcuts import render, redirect
-from django.urls import reverse
+from django.contrib.messages import get_messages
+from django.db.models import Sum
+from django.db.models.functions import Coalesce
+from django.http import HttpResponse, JsonResponse
+from django.shortcuts import render
 from django.views import View
+from rest_framework import viewsets
+from rest_framework.decorators import action
 
 from parser.forms import InstagramAccountForm
-from parser.models import InstagramAccount, ParserRun, ParserRunFactory
+from parser.models import InstagramAccount, ParserRun, AccountStatistics
 
 
 class HtmxView(View):
 
     def get_instagram_list(self, target='#instagram_account_list'):
-        accounts = InstagramAccount.objects.all().order_by('status', '-created_at')
+        accounts = InstagramAccount.objects.all().order_by(
+            'status', '-created_at'
+        ).annotate(videos_parsed=Sum('statistics__parser_videos_amount'))
         context = {
             'accounts': accounts,
         }
+        for acc in accounts:
+            print("-->", acc.videos_parsed)
         resp = render(self.request, 'htmx_components/instagram_account_list.html', context)
         resp['Hx-Retarget'] = target
         return resp
@@ -41,10 +49,14 @@ class HtmxInstagramAccountsCreate(HtmxView):
 
 class HtmxInstagramAccounts(HtmxView):
     def get(self, request, *args, **kwargs):
-        accounts = InstagramAccount.objects.all().order_by('status', '-created_at')
+        accounts = InstagramAccount.objects.all().order_by('status', '-created_at').order_by(
+            'status', '-created_at'
+        ).annotate(videos_parsed=Coalesce(Sum('statistics__parser_videos_amount'), 0))
         context = {
             'accounts': accounts,
         }
+        for acc in accounts:
+            print("-->", acc.videos_parsed)
         return render(request, 'htmx_components/instagram_account_list.html', context)
 
 
@@ -75,23 +87,43 @@ class HtmxInstagramAccountsDetail(HtmxView):
 class TimelineView(View):
     def get(self, request, *args, **kwargs):
         runs = ParserRun.objects.all()
-        # ParserRunFactory().gen_test_data()
         _groups = set([i.worker_id for i in runs])
-        colors = [
-            "#e64a94", "#10d9b5", "#d6410e", "#99fa4c", "#a7e97d", "#37232b",
-            "#e2a6bc", "#386eee", "#560627", "#1c5928", "#981abe", "#535e3d", "#7ede00", "#642a40", "#3e108b", "#086aea",
-            "#cf5da7", "#e85e51", "#942469", "#f519d3", "#acc089", "#4c8001", "#f707d1", "#47141f", "#e9e6af",
-            "#2b5ea5", "#1a9a9c", "#95bde2", "#20a61d",
-        ]
-        random.shuffle(colors)
-        group_color_map = {g: colors[i] for i, g in enumerate(_groups)}
-        timelines = [{
-            **r.timeline, "style": f"background-color: {group_color_map[r.timeline['group']]};"
-        } for r in runs]
-        groups = [{
-            "id": r, "content": r, "style": f"background-color: {group_color_map[r]};"
-        } for r in _groups]
-        return JsonResponse({
-            "data": timelines,
-            "groups": groups,
-        })
+        timelines = [{**r.timeline} for r in runs]
+        groups = [{"id": r, "content": r} for r in _groups]
+        return JsonResponse(
+            {
+                "items": timelines,
+                "groups": groups,
+            }
+        )
+
+
+class AccountStatisticViewSet(viewsets.GenericViewSet):
+
+    @action(detail=True, methods=['get'], url_path='account', url_name='account-stats')
+    def account_stats(self, request, pk, *args, **kwargs):
+        stats = AccountStatistics.objects.filter(
+            account_id=pk
+        ).select_related("run", "account").order_by("run__start_time")
+        if not stats:
+            messages.warning(request, "No data found")
+
+            resp = JsonResponse(None, safe=False)
+            msg = [{"message": m.message, "tags": m.tags} for m in get_messages(request)]
+            hx_trigger = {"messages": msg}
+            resp.headers["HX-Trigger"] = json.dumps(hx_trigger)
+
+            return resp
+
+        stats_dict = {
+            "username": stats[0].account.username,
+            "chartData": [
+                {
+                    "label": f"{i.run.end_time.strftime('%d %b %y')}",
+                    "data": i.parser_videos_amount,
+                    "run_id": i.run_id,
+                } for i in stats
+            ]
+        }
+        return JsonResponse(stats_dict, safe=False)
+

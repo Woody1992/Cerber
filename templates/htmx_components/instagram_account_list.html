@@ -4,13 +4,14 @@
      style="max-height: 300px;
      overflow-y:scroll;
      overflow-x:scroll;">
-    <table class="table table-bordered  table-striped table-sm">
+    <table class="table table-bordered table-hover table-sm">
         <thead>
         <tr>
             <th scope="col">#</th>
             <th scope="col">User</th>
             <th scope="col">Status</th>
             <th scope="col">Running</th>
+            <th scope="col">Vid. count</th>
             <th scope="col"></th>
         </tr>
         </thead>
@@ -18,7 +19,7 @@
         {% for account in accounts %}
             <tr>
                 <th scope="row">{{ forloop.counter0 }}</th>
-                <td>{{ account.username }}</td>
+                <td><a class="link-info" onclick="createChart({{ account.id }})">{{ account.username }}</a></td>
                 <td>
                     {% if account.status == 'active' %}<img src="{% static 'img/verified.png' %}" width="16px" height="16px" alt="">
                     {% elif account.status == 'inactive' %}<img src="{% static 'img/remove.png' %}" width="16px" height="16px" alt="">
@@ -30,6 +31,7 @@
                 >
                     {{ account.in_use }}
                 </td>
+                <td>{{ account.videos_parsed }}</td>
                 <td>
                     <div class="btn-group" role="group" aria-label="Basic example" style="width: 100%">
                       <a hx-target="#modelBody"
@@ -49,18 +51,10 @@
                           <img src="{% static 'img/delete.png' %}" width="16px" height="16px" alt="">
                       </a>
                     </div>
-{#                        hx-get="{% url 'instagram_account_detail' account.id %}"#}
-{#                        hx-target="#instagram_account_detail"#}
-{#                        hx-swap="outerHTML"#}
-{#                        hx-trigger="click"#}
-{#                        hx-get="{% url 'instagram_account_detail' account.id %}"#}
-{#                        hx-target="#instagram_account_detail"#}
-{#                        hx-swap="outerHTML"#}
-{#                        hx-trigger="click"#}
                 </td>
             </tr>
-        {% endfor %}
 
+        {% endfor %}
         </tbody>
     </table>
 </div>

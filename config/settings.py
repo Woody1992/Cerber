@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-kif)%$n_pw6+7!8z@sc!v&84#0)yoe$-)0#@w8(bgy433yo7z=
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -39,8 +39,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    'django_extensions',
+
     'parser'
 ]
+TIME_ZONE = 'Europe/Kiev'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

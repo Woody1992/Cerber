@@ -11,6 +11,7 @@ ACCOUNT_STATUS = (
     ('banned', 'Заблокований'),
 )
 
+
 class InstagramAccount(models.Model):
     username = models.CharField(max_length=100)
     password = models.CharField(max_length=100)
@@ -18,8 +19,15 @@ class InstagramAccount(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    banned_at = models.DateTimeField(null=True, blank=True)
 
     in_use = models.BooleanField(default=False)
+
+    def get_statistics(self):
+        res = {}
+        for stat in self.statistics.all():
+            res.update(stat.get_statistics())
+        return res
 
     def __str__(self):
         return self.username
@@ -47,6 +55,14 @@ class ParserRun(models.Model):
     errors = models.JSONField(null=True, blank=True)
     parsed_video_amount = models.PositiveIntegerField(default=0)
     worker_id = models.CharField(max_length=100, null=True, blank=True)
+
+    def calc_status(self):
+        if self.start_time > datetime.now():
+            return 'pending'
+        elif self.end_time < datetime.now() :
+            return 'completed' if not self.errors else 'failed'
+        else:
+            return 'active'
 
     def get_date_timeline(self) -> tuple[date, date]:
         """
@@ -80,8 +96,19 @@ class ParserRun(models.Model):
             "content": f"Run {self.id}",
             "id": self.id,
             "group": self.worker_id,
+            "status": self.status,
         }
 
+
+class AccountStatistics(models.Model):
+    account = models.ForeignKey(InstagramAccount, on_delete=models.CASCADE, related_name='statistics')
+    run = models.ForeignKey(ParserRun, on_delete=models.CASCADE, related_name='statistics')
+    parser_videos_amount = models.PositiveIntegerField(default=0)
+
+    def get_statistics(self) -> dict[datetime, int]:
+        return {
+            self.run.end_time: self.parser_videos_amount
+        }
 
 class ParserRunFactory:
 
@@ -172,3 +199,4 @@ class ParserRunFactory:
 
     def random_date(self, start, end, prop=random.random()):
         return self.str_time_prop(start, end, "%Y-%m-%d%H:%M:%S", prop)
+

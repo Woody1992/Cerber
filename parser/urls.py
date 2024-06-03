@@ -1,3 +1,4 @@
+from rest_framework.routers import DefaultRouter
 from django.urls import path
 from parser.views import HomePageView
 from parser import htmx_views
@@ -13,6 +14,11 @@ htmx_urlpatterns = [
 ]
 
 
+router = DefaultRouter()
+router.register(r'stats', htmx_views.AccountStatisticViewSet, basename='stats')
+api_urlpatterns = router.urls
+
+
 urlpatterns = [
     path('', HomePageView.as_view(), name='home'),
-] + htmx_urlpatterns
+] + htmx_urlpatterns + api_urlpatterns
